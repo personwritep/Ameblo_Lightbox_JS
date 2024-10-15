@@ -145,7 +145,7 @@ function box_env0(){
         '.fin { animation: fadeIn .5s ease 0s 1 normal; animation-fill-mode: both; } '+
         '@keyframes fadeOut { 0% {opacity: 1} 100% {opacity: 0}} '+
         '.fout { animation: fadeOut .2s ease 0s 1 normal; animation-fill-mode: both; } '+
-        '#lightbox { position: fixed; top: 0; left: 0; z-index: 3000; visibility: hidden; '+
+        '#lightbox { position: fixed; top: 0; left: 0; z-index: calc(infinity); visibility: hidden; '+
         'background: black; width: 100vw; height: 100vh; text-align: center; } '+
         '#photo_sw { position: fixed; width: 100%; height: 15%; user-select: none; } '+
         '#photo_sw:hover #photo_link { opacity: 1; } '+
@@ -693,4 +693,3 @@ function weel_idle(event){
 
 window.addEventListener("mousewheel", weel_idle, {passive: false});
 window.addEventListener("wheel", weel_idle, {passive: false});
-
