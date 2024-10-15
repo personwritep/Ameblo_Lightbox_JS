@@ -363,7 +363,7 @@ function zoom_set(mode){
             return true; }}
 
 
-    if(ws && wsv){
+    if(photo_sw && ws && wsv){
         if(mode==0){
             wsv.textContent='Gz '+ graphic_w; }
         else{
@@ -415,7 +415,7 @@ function zoom_set(mode){
                     wsv.textContent='Cz '+ comic_w;
                     localStorage.setItem('Lightbox_comic_w', comic_w); }}} // Storage更新
 
-    } // if(ws && wsv)
+    } // if(photo_sw && ws && wsv)
 
 } // zoom_set()
 
