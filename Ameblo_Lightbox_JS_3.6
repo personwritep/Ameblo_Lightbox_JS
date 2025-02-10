@@ -8,6 +8,7 @@
 // @match        https://news.ameba.jp/*
 // @match        https://blogger.ameba.jp/*
 // @match        https://blogtag.ameba.jp/*
+// @icon        https://www.google.com/s2/favicons?sz=64&domain=ameblo.jp
 // @noframes
 // @grant        none
 // @updateURL        https://github.com/personwritep/Ameblo_Lightbox_JS/raw/main/Ameblo_Lightbox_JS.user.js
