@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Ameblo Lightbox JS
 // @namespace        http://tampermonkey.net/
-// @version        3.6
+// @version        3.7
 // @description        ブログ掲載画像の高精細な暗転拡大表示
 // @author        Ameba Blog User
 // @match        https://ameblo.jp/*
@@ -156,10 +156,6 @@ function box_env0(){
         'text-decoration: none; font: bold 21px Meiryo; padding: 3px 12px 0; '+
         'color: #000; background: #fff; border: 2px solid #000; border-radius: 6px; '+
         'cursor: pointer; opacity: 0; } '+
-        '#lbox_help { position: absolute; top: 24px; left: 32px; width: 24px; height: 24px; '+
-        'margin: 0; font: bold 24px/29px Meiryo; color: #000; background: #fff; '+
-        'border: 2px solid #000; border-radius: 30px; cursor: pointer; opacity: 0; } '+
-        '#photo_sw:hover #lbox_help { opacity: 1; } '+
         '#photo_link svg { width: 28px; fill: currentColor; } '+
         '#photo_link svg.a { height: 24px; vertical-align: -4px; } '+
         '#photo_link svg.b { height: 22px; vertical-align: -3px; } '+
@@ -168,10 +164,14 @@ function box_env0(){
         '#photo_sw:hover .bc { opacity: 1; } '+
         '#mag_sw { position: absolute; top: 24px; right: 30px; '+
         'display: flex; justify-content: flex-end; } '+
-        '.bc { height: 24px; margin-left: 20px; box-sizing: content-box; overflow: hidden; '+
-        'font: bold 22px/26px Meiryo; border-radius: 4px; cursor: pointer; opacity: 0; } '+
-        '#ws, #ac { line-height: 28px; padding: 0 5px; } '+
+        '#ws, #ac, #bow { height: 24px; margin-left: 15px; box-sizing: content-box; '+
+        'font: bold 22px/28px Meiryo; border-radius: 4px; overflow: hidden; cursor: pointer; '+
+        'opacity: 0; } '+
+        '#ws, #ac { padding: 0 5px; } '+
         '#ws svg { margin-right: -4px; vertical-align: -4px; } '+
+        '#lbox_help { height: 24px; width: 24px; margin-left: 15px; font: bold 24px/29px Meiryo; '+
+        'border: 2px solid #000; border-radius: 30px; cursor: pointer; opacity: 0; } '+
+        '#photo_sw:hover #lbox_help { opacity: 1; } '+
         '#box_img { width: 96vw; height: 96vh; padding: 2vh 2vw; object-fit: contain; } '+
         '</style>';
 
@@ -202,14 +202,15 @@ function box_env0(){
     let box=
         '<div id="lightbox">'+
         '<div id="photo_sw">'+
-        '<p id="lbox_help">？</p>'+
         '<a id="photo_link"></a>'+
         '<div id="mag_sw">'+
         '<p id="ws" class="bc" title="拡大率：マウスホイールで調節">'+
         '<span id="wsv"></span>'+ ud_SVG +'</p>'+
         '<p id="ac" class="bc" title="Lightboxの起動操作"></p>'+
         '<p id="bow" class="bc" title="Lightboxの背景色">'+svg_bow+'</p>'+
-        '</div></div>'+
+        '<p id="lbox_help" class="bc">？</p>'+
+        '</div>'+
+        '</div>'+
         '<img id="box_img"></div>';
 
     if(!body.querySelector('#lightbox')){
