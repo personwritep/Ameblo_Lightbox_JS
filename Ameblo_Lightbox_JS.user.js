@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Ameblo Lightbox JS
 // @namespace        http://tampermonkey.net/
-// @version        3.7
+// @version        3.8
 // @description        ブログ掲載画像の高精細な暗転拡大表示
 // @author        Ameba Blog User
 // @match        https://ameblo.jp/*
@@ -58,7 +58,7 @@ function catch_photo(){
     let path=location.pathname; // 現在のパス名
     let host=window.location.hostname; // 現在のホスト名（サブドメインを含む）
 
-    if(path.split('/').slice(-1)[0].startsWith('image')){ // ⬜ 画像一覧画面
+    if(path.split('/').pop().startsWith('image')){ // ⬜ 画像一覧・個別画像
         let page_img=document.querySelectorAll('img');
         for(let k=0; k<page_img.length; k++){
             page_img[k].addEventListener('mousedown', function(event){
@@ -119,7 +119,7 @@ function catch_photo(){
 
 
 
-    let img_frame=document.querySelector('._1AI61ifa'); // 主画像フレーム
+    let img_frame=document.querySelector('div[tabindex="0"]'); // 主画像フレーム
     if(img_frame){
         img_frame.onclick=function(event){
             event.stopImmediatePropagation();
@@ -128,12 +128,12 @@ function catch_photo(){
 
 
     path=location.pathname; // 現在のパス名
-    if(path.split('/').slice(-1)[0]=='imagelist.html'){ // 画像リストページでのみ
+    if(path.split('/').pop()=='imagelist.html'){ // 画像リストページでのみ
         setTimeout(()=>{
-            if(document.querySelector('._1BDkntfH') // main要素
-               && !document.querySelector('._3h0MGtgZ')){ // 画像のul要素
+            if(document.querySelector('#app main') // main要素
+               && !document.querySelector('#app main img')){ // ユーザー画像
                 location.reload();
-            }}, 2000); } // 2sec待っても画像リストが取得できない時はリロード
+            }}, 1000); } // 1sec待っても画像リストが取得できない時はリロード
 
 } // catch_photo()
 
