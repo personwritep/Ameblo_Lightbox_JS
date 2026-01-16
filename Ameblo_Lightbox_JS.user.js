@@ -130,10 +130,13 @@ function catch_photo(){
     path=location.pathname; // 現在のパス名
     if(path.split('/').pop()=='imagelist.html'){ // 画像リストページでのみ
         setTimeout(()=>{
-            if(document.querySelector('#app main') // main要素
-               && !document.querySelector('#app main img')){ // ユーザー画像
-                location.reload();
-            }}, 1000); } // 1sec待っても画像リストが取得できない時はリロード
+            if(document.querySelector('#app main')){ // main要素
+                if(!document.querySelector('#app main img')){ // ユーザー画像
+                    if(document.querySelector('#app main svg')){
+                        history.back(); }
+                    else{
+                        location.reload(); }}}
+        }, 1000); } // 1sec待っても画像リストが取得できない時はリロード
 
 } // catch_photo()
 
