@@ -1,0 +1,124 @@
+// ==UserScript==
+// @name         Ameblo Lightbox JS ▶▶ Movie テストコード
+// @namespace    http://tampermonkey.net/
+// @version      0.25
+// @description  ブログ掲載画像の高精細な暗転拡大表示
+// @author       Ameba Blog User
+// @match        https://ameblo.jp/*
+// @noframes
+// @grant        none
+// ==/UserScript==
+
+
+let target=document.querySelector('head');
+let monitor=new MutationObserver(catch_click);
+monitor.observe(target, { childList: true, subtree: true, attributes: true });
+
+catch_click();
+
+function catch_click(){
+
+    box_env3();
+
+    function box_env3(){
+        let body=document.querySelector('body');
+        let css=
+            '.y_player { position: fixed; top: 0; left: 0; z-index: 5000; '+
+            'padding: 10vh 2vw; width: 96vw !important; height: 80vh !important; '+
+            'background: #000; box-shadow: 0 0 0 2px #000; } '+
+            '#close_header { position: fixed; top: 0; left: 0; z-index: 5001; '+
+            'width: 100%; height: 60px; } '+
+            '#close_header:hover #close_mov { opacity: 1; } '+
+            '#close_mov { position: absolute; top: 20px; left: 30px; opacity: 0; '+
+            'font: bold 21px Meiryo; padding: 5px 12px 1px; background: #fff; '+
+            'color: #000; border: 2px solid #000; border-radius: 6px; cursor: pointer; }';
+
+        let style=document.createElement('style');
+        style.setAttribute("id", "light_style_y");
+        style.textContent=css;
+        if(!document.querySelector('#light_style_y')){
+            body.appendChild(style); }
+
+        let close=document.createElement('div');
+        close.setAttribute("id", "close_header");
+        close.innerHTML='<p id="close_mov">✖ Close Movie</p>';
+        if(!document.querySelector('#close_header')){
+            body.appendChild(close); }}
+
+
+    let y_iframe=document.querySelectorAll('#entryBody iframe[src*="youtube.com"]');
+    for(let k=0; k<y_iframe.length; k++){
+        cover_sw(y_iframe[k]);
+        box_view(y_iframe[k]);
+        normal_view(); }
+
+
+    function box_view(video){
+        let close_header=document.querySelector('#close_header');
+        let cover=video.nextElementSibling;
+        if(close_header && cover){
+            cover.addEventListener('click', function(event){
+                let html_=document.querySelector('html');
+                html_.style.overflow='hidden';
+                close_header.style.display='block';
+                video.classList.add('y_player'); }); }}
+
+
+    function normal_view(){
+        let close_header=document.querySelector('#close_header');
+        let close_mov=document.querySelector('#close_mov');
+        if(close_header && close_mov){
+            close_mov.addEventListener('click', function(){
+                let html_=document.querySelector('html');
+                html_.style.overflow='visible';
+                close_header.style.display='none';
+                let m_iframe=document.querySelectorAll('#entryBody iframe');
+                for(let k=0; k<m_iframe.length; k++){
+                    if(m_iframe[k].classList.contains('y_player')){
+                        m_iframe[k].classList.remove('y_player'); }}}); }}
+
+
+    document.addEventListener('keydown', (event)=>{
+        if(event.ctrlKey){
+            cover_cont(1);
+            document.addEventListener('keyup', (event)=>{
+                if(!event.ctrlKey){
+                    cover_cont(0); }}); }
+
+        function cover_cont(n){
+            let cover_in=document.querySelectorAll('.c_i');
+            for(let k=0; k<cover_in.length; k++){
+                if(n==0){
+                    cover_in[k].style.position='relative'; }
+                if(n==1){
+                    cover_in[k].style.position='absolute'; }}}});
+
+
+    function cover_sw(video){
+        let cover_out=document.createElement('div');
+        cover_out.setAttribute('class', 'c_o');
+        cover_out.style.outline='2px solid #2196f3';
+        cover_out.style.position='relative';
+        if(video.parentNode.className!='c_o'){
+            cover_out.appendChild(video.cloneNode(true));
+            video.parentNode.replaceChild(cover_out, video);
+            let cover_in=document.createElement('div');
+            cover_in.setAttribute('class', 'c_i');
+            cover_in.style.background='#00000020';
+            cover_in.style.width='100%';
+            cover_in.style.height='100%';
+            cover_in.style.position='relative';
+            cover_in.style.top='0';
+            cover_out.appendChild(cover_in); }}
+
+
+/*
+    let s_iframe=document.querySelectorAll('#entryBody iframe[src*="static.blog-video"]');
+    for(let k=0; k<s_iframe.length; k++){
+        cover_sw(s_iframe[k]);
+        box_view(s_iframe[k]);
+        normal_view(s_iframe[k]); }
+*/
+
+
+} // catch_click()
