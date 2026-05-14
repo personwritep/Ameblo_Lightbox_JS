@@ -1,0 +1,310 @@
+// ==UserScript==
+// @name         Ameblo Lightbox JS
+// @namespace    http://tampermonkey.net/
+// @version      0.9
+// @description  ブログ掲載画像の高精細な暗転拡大表示
+// @author       Ameba Blog User
+// @match        https://ameblo.jp/*
+// @noframes
+// @grant        none
+// ==/UserScript==
+
+let disp_mode=0; // 拡張ディスプレイモードの判別
+let back_color; // Lightbox背景色
+let comic_w; // 4コマ漫画の最大幅指定
+
+let html_=document.querySelector('html');
+
+let target=document.querySelector('head');
+let monitor=new MutationObserver(catch_photo);
+monitor.observe(target, { childList: true });
+
+catch_photo();
+
+function catch_photo(){
+    let page_img=document.querySelectorAll('#entryBody img');
+    if(page_img.length!=0){
+        box_env0();
+        box_env1(); // Lightbox背景色設定
+
+        for(let k=0; k<page_img.length; k++){
+            if(page_img[k].parentNode.tagName=='A'){
+                page_img[k].parentNode.style.opacity='1'; }}
+
+        for(let k=0; k<page_img.length; k++){
+            page_img[k].addEventListener('mousedown', function(event){
+                if(event.shiftKey==false && event.ctrlKey==false){
+                    event.preventDefault();
+                    box_env2(page_img[k]);
+                    set_img(page_img[k]);
+                    to_storage(page_img[k]);
+                    close(); }}); }}} // catch_photo()
+
+
+
+let target_s=document.querySelector('body');
+let monitor_s=new MutationObserver(catch_photo_s);
+monitor_s.observe(target_s, { childList: true, subtree: true });
+
+catch_photo_s(); // 画像一覧（個別表示）で実行
+
+function catch_photo_s(){
+    let page_img=document.querySelectorAll('._1cWXMxGU img');
+    if(page_img.length!=0){
+        box_env0();
+        box_env1(); // Lightbox背景色設定
+
+        for(let k=0; k<page_img.length; k++){
+            page_img[k].addEventListener('mousedown', function(event){
+                if(event.shiftKey==false && event.ctrlKey==false){
+                    event.preventDefault();
+                    box_env2(page_img[k]);
+                    set_img(page_img[k]);
+                    close(); }}); }}} // catch_photo_s()
+
+
+
+function box_env0(){
+    let body=document.querySelector('body');
+    let css=
+        '@keyframes fadeIn { 0% {opacity: 0} 100% {opacity: 1}} '+
+        '.fin { animation: fadeIn .5s ease 0s 1 normal; animation-fill-mode: both; } '+
+        '@keyframes fadeOut { 0% {opacity: 1} 100% {opacity: 0}} '+
+        '.fout { animation: fadeOut .2s ease 0s 1 normal; animation-fill-mode: both; } '+
+        '#lightbox { position: fixed; top: 0; left: 0; z-index: 3000; visibility: hidden; '+
+        'background: black; width: 100vw; height: 100vh; text-align: center; } '+
+        '#photo_sw { position: fixed; width: 100%; height: 15%; } '+
+        '#photo_sw:hover #photo_link { opacity: 1; } '+
+        '#photo_link { position: absolute; top: 20px; left: 30px; opacity: 0; '+
+        'font: bold 21px Meiryo; padding: 3px 12px 2px 10px; background: #fff; '+
+        'color: #000; border: 2px solid #000; border-radius: 6px; cursor: pointer; } '+
+        '#photo_link::before { content: "\\f00e"; font: 36px AmebaNewSymbols; '+
+        'color: #000; padding-right: 6px; vertical-align: -9px; } '+
+        '#photo_sw:hover .bc { opacity: 1; } '+
+        '.bc { position: absolute; top: 24px; right: 24px; height: 24px; overflow: hidden;'+
+        'font: normal 24px/26px Meiryo; border-radius: 4px; cursor: pointer; opacity: 0; } '+
+        '#wp { right: 100px; font-weight: bold; } #wm { right: 70px; font-weight: bold; } '+
+        '#box_img { width: 96vw; height: 96vh; padding: 2vh 2vw; object-fit: contain; } ';
+
+    let style=document.createElement('style');
+    style.setAttribute('id', 'light_style');
+    style.textContent=css;
+    if(!document.querySelector('#light_style')){
+        body.appendChild(style); }
+
+    let box=document.createElement('div');
+    box.setAttribute('id', 'lightbox');
+    box.innerHTML=
+        '<div id="photo_sw"><p id="photo_link">Photo Storage</p>'+
+        '<p id="wp" class="bc">＋</p><p id="wm" class="bc">－</p>'+
+        '<p id="bow" class="bc">◤</p></div>'+
+        '<img id="box_img">';
+    if(!document.querySelector('#lightbox')){
+        body.appendChild(box); }} // box_env0()
+
+
+
+function box_env1(){
+    back_color=get_cookie('Lightbox_back');
+    if(back_color!='black' && back_color!='white'){
+        back_color='black'; }
+    document.cookie='Lightbox_back='+back_color+'; Max-Age=2592000'; // Cookieの更新
+    icon_color();
+
+    comic_w=get_cookie('Lightbox_comic_w');
+    if(isNaN(comic_w) || comic_w<20 || comic_w>90){
+        comic_w=90; }
+    document.cookie='Lightbox_comic_w='+comic_w+'; Max-Age=2592000'; // Cookieの更新
+
+    b_or_w();
+    comic_width(); } // box_env1()
+
+
+
+function b_or_w(){
+    let lightbox=document.querySelector('#lightbox');
+    lightbox.style.background=back_color; // 背景色をCookieから指定
+    let bow=document.querySelector('#bow');
+    if(bow){
+        bow.onclick=function(event){
+            event.stopImmediatePropagation();
+            if(lightbox.style.backgroundColor!='white'){
+                lightbox.style.backgroundColor='white';
+                back_color='white'; }
+            else{
+                lightbox.style.backgroundColor='black';
+                back_color='black'; }
+            icon_color();
+            document.cookie='Lightbox_back='+back_color+'; Max-Age=2592000'; // Cookieの更新
+        }}}
+
+
+
+function icon_color(){
+    let bc=document.querySelectorAll('#photo_sw .bc');
+    for(let k=0; k<bc.length; k++){
+        if(back_color=='black'){
+            bc[k].style.color='white';
+            bc[k].style.background='#000';
+            bc[k].style.border='2px solid #fff'; }
+        else{
+            bc[k].style.color='black';
+            bc[k].style.background='#fff';
+            bc[k].style.border='2px solid #000'; }}}
+
+
+
+function comic_width(){
+    disp_wpm(disp_mode);
+
+    let wp=document.querySelector('#wp');
+    if(wp){
+        wp.onclick=function(event){
+            event.stopImmediatePropagation();
+            if(comic_w<81){
+                comic_w=Number(comic_w) +10; }
+            let box_img=document.querySelector('#box_img');
+            if(box_img){
+                box_img.style.width=comic_w+'vw'; }
+            document.cookie='Lightbox_comic_w='+comic_w+'; Max-Age=2592000'; // Cookieの更新
+        }}
+
+    let wm=document.querySelector('#wm');
+    if(wm){
+        wm.onclick=function(event){
+            event.stopImmediatePropagation();
+            if(comic_w>29){
+                comic_w=Number(comic_w) -10; }
+            let box_img=document.querySelector('#box_img');
+            if(box_img){
+                box_img.style.width=comic_w+'vw'; }
+            document.cookie='Lightbox_comic_w='+comic_w+'; Max-Age=2592000'; // Cookieの更新
+        }}}
+
+
+
+function disp_wpm(n){
+    let wp=document.querySelector('#wp');
+    if(wp){
+        if(n==0){
+            wp.style.visibility='hidden'; }
+        else{
+            wp.style.visibility='visible'; }}
+    let wm=document.querySelector('#wm');
+    if(wm){
+        if(n==0){
+            wm.style.visibility='hidden'; }
+        else{
+            wm.style.visibility='visible'; }}}
+
+
+
+function get_cookie(name){
+    let cookie_req=document.cookie.split('; ').find(row=>row.startsWith(name));
+    if(cookie_req){
+        if(cookie_req.split('=')[1]==null){
+            return 0; }
+        else{
+            return cookie_req.split('=')[1]; }}
+    if(!cookie_req){
+        return 0; }}
+
+
+
+function box_env2(target_img){
+    let photo_link=document.querySelector('#photo_link');
+    if(photo_link){
+        if(target_img.parentNode.getAttribute('href')
+           && target_img.parentNode.classList.contains('detailOn')){
+            photo_link.style.visibility='visible'; }
+        else{
+            photo_link.style.visibility='hidden'; }}}
+
+
+
+function hide_photo_link(){
+    let photo_link=document.querySelector('#photo_link');
+    if(photo_link){
+        photo_link.style.visibility='hidden'; }}
+
+
+
+function set_img(target_img){
+    let lightbox=document.querySelector('#lightbox');
+    let box_img=lightbox.querySelector('#box_img');
+    let img_url=target_img.getAttribute('src').split('?caw=');
+    if(lightbox && img_url[0]!=''){
+        html_.style.overflow='hidden';
+        box_img.src=img_url[0];
+        lightbox.style.visibility='visible';
+        zoom_reset(lightbox);
+        lightbox.classList.remove('fout');
+        lightbox.classList.add('fin'); }}
+
+
+
+function zoom_reset(l_box){
+    let body=document.querySelector('body');
+    let zoom_f=window.getComputedStyle(body).getPropertyValue('zoom');
+    if(zoom_f || zoom_f!=1){ // bodyで拡大ツールによるのzoom指定がある場合
+        l_box.style.zoom=1/zoom_f; }}
+
+
+
+function to_storage(target_img){
+    let photo_link=document.querySelector('#photo_link');
+    if(photo_link){
+        photo_link.onclick=function(event){
+            event.stopImmediatePropagation();
+            location.href=target_img.parentNode.getAttribute('href'); }}}
+
+
+
+function close(){
+    let html_=document.querySelector('html');
+    let lightbox=document.querySelector('#lightbox');
+    let box_img=lightbox.querySelector('#box_img');
+
+    if(lightbox){
+        lightbox.onclick=function(event){
+            event.preventDefault();
+
+            let i_width=box_img.naturalWidth;
+            let i_height=box_img.naturalHeight;
+            let w_width= window.innerWidth;
+            let w_height= window.innerHeight;
+
+            if(!event.altKey){
+                html_.style.overflow='inherit';
+                lightbox.classList.remove('fin');
+                lightbox.classList.add('fout');
+                lightbox.style.overflow='hidden'; // overflowのリセット
+                box_img.style.height='96vh';
+                box_img.style.width='96vw';
+                box_img.style.padding='2vh 2vw';
+                setTimeout(()=>{
+                    lightbox.style.visibility='hidden';
+                    box_img.src='';
+                }, 200);
+                hide_photo_link(); // 画像一覧へのリンクを無効化
+                disp_mode=0; // 拡張ディスプレイモード リセット
+                disp_wpm(disp_mode); }
+
+            if(event.altKey){
+                if(i_width*w_height/w_width/i_height>1.2){ // 画像とウインドウを比較：横長
+                    lightbox.style.overflowX='scroll';
+                    lightbox.style.overflowY='hidden';
+                    box_img.style.height='90vh';
+                    box_img.style.width='auto';
+                    box_img.style.padding='4vh 2vw'; }
+
+                else if(i_width*w_height/w_width/i_height<0.86){ // 画像とウインドウを比較：縦長
+                    disp_mode=1; // 拡張ディスプレイモード 縦長
+                    disp_wpm(disp_mode);
+
+                    lightbox.style.overflowX='hidden';
+                    lightbox.style.overflowY='scroll';
+                    box_img.style.height='auto';
+                    box_img.style.width=comic_w +'vw';
+                    box_img.style.padding='2vh 5vw'; }}
+        }}}
