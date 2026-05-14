@@ -1,0 +1,54 @@
+// ==UserScript==
+// @name         Ameblo Lightbox JS
+// @namespace    http://tampermonkey.net/
+// @version      0.1
+// @description  ブログ掲載画像の高精細な暗転拡大表示
+// @author       Ameba Blog User
+// @match        https://ameblo.jp/*
+// @noframes
+// @grant        none
+// ==/UserScript==
+
+
+let target=document.querySelector('head');
+let monitor=new MutationObserver(catch_click);
+monitor.observe(target, { childList: true });
+
+catch_click();
+
+function catch_click(){
+    let html_=document.querySelector('html');
+    let page_img=document.querySelectorAll('#entryBody img');
+
+    for(let k=0; k<page_img.length; k++){
+        page_img[k].onclick=function(event){
+            event.preventDefault();
+
+            let body=document.querySelector('body');
+            let css=
+                'position: fixed; top: 0; left: 0; z-index: 3000; width: 96vw; height: 96vh; padding: 2vh 2vw; '+
+                'background: black; object-fit: contain;';
+            let box=document.createElement('img');
+            box.setAttribute("id", "lightbox");
+            box.setAttribute("style", css);
+            if(body.querySelector('#lightbox')){
+                body.querySelector('#lightbox').remove(); }
+
+            let img_url=page_img[k].getAttribute('src').split('?caw=');
+            if(img_url[0]!=''){
+                body.appendChild(box);
+                box.src=img_url[0];
+                html_.style.overflow='hidden'; }
+
+            close(); }}
+
+    function close(){
+        let html_=document.querySelector('html');
+        let lightbox=document.querySelector('#lightbox');
+        if(lightbox){
+            lightbox.onclick=function(event){
+                event.preventDefault();
+                lightbox.style.display='none';
+                html_.style.overflow='inherit'; }}}
+
+} // catch_click()
